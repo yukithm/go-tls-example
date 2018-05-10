@@ -1,8 +1,8 @@
-# tls-example
+# go-tls-example
 
 TLS example with client certificate.
 
-## Certificates
+## Create certificates
 
 Create CA:
 
