@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/pem"
 	"errors"
 	"flag"
 	"fmt"
@@ -77,7 +78,14 @@ func connect(network, addr string) error {
 
 	state := conn.ConnectionState()
 	for _, v := range state.PeerCertificates {
-		fmt.Println(x509.MarshalPKIXPublicKey(v.PublicKey))
+		pkey, err := x509.MarshalPKIXPublicKey(v.PublicKey)
+		if err == nil {
+			pkeyPem := pem.Block{
+				Type:  "PUBLIC KEY",
+				Bytes: pkey,
+			}
+			fmt.Println(string(pem.EncodeToMemory(&pkeyPem)))
+		}
 		fmt.Println(v.Subject)
 	}
 	log.Println("Handshake:", state.HandshakeComplete)

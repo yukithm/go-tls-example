@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/pem"
 	"errors"
 	"flag"
 	"fmt"
@@ -101,7 +102,14 @@ func handleClient(conn net.Conn) {
 		}
 		state := tconn.ConnectionState()
 		for _, v := range state.PeerCertificates {
-			fmt.Println(x509.MarshalPKIXPublicKey(v.PublicKey))
+			pkey, err := x509.MarshalPKIXPublicKey(v.PublicKey)
+			if err == nil {
+				pkeyPem := pem.Block{
+					Type:  "PUBLIC KEY",
+					Bytes: pkey,
+				}
+				fmt.Println(string(pem.EncodeToMemory(&pkeyPem)))
+			}
 			fmt.Println(v.Subject)
 		}
 	}
