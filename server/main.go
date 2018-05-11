@@ -44,14 +44,17 @@ func serve(network, addr string) error {
 		return err
 	}
 
-	caCertPem, err := ioutil.ReadFile(caCertFile)
-	if err != nil {
-		return fmt.Errorf("Unable to read CA cert: %s", err)
-	}
+	var clientCertPool *x509.CertPool
+	if caCertFile != "" {
+		caCertPem, err := ioutil.ReadFile(caCertFile)
+		if err != nil {
+			return fmt.Errorf("Unable to read CA cert: %s", err)
+		}
 
-	clientCertPool := x509.NewCertPool()
-	if ok := clientCertPool.AppendCertsFromPEM(caCertPem); !ok {
-		return errors.New("Failed to append CA cert to the pool")
+		clientCertPool = x509.NewCertPool()
+		if ok := clientCertPool.AppendCertsFromPEM(caCertPem); !ok {
+			return errors.New("Failed to append CA cert to the pool")
+		}
 	}
 
 	tlsConfig := &tls.Config{

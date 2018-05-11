@@ -16,12 +16,16 @@ var (
 	certFile   = "./client.crt"
 	keyFile    = "./client.key"
 	caCertFile = "./demoCA/cacert.pem"
+	hostname   = "localhost"
+	insecure   = false
 )
 
 func init() {
 	flag.StringVar(&certFile, "cert", certFile, "certificate file (PEM)")
 	flag.StringVar(&keyFile, "key", keyFile, "private key file (PEM)")
 	flag.StringVar(&caCertFile, "cacert", caCertFile, "CA certificate file (PEM)")
+	flag.StringVar(&hostname, "hostname", hostname, "Server's hostname")
+	flag.BoolVar(&insecure, "insecure", insecure, "Skip verification")
 }
 
 func main() {
@@ -43,21 +47,23 @@ func connect(network, addr string) error {
 		return err
 	}
 
-	caCertPem, err := ioutil.ReadFile(caCertFile)
-	if err != nil {
-		return fmt.Errorf("Unable to read CA cert: %s", err)
-	}
-
-	caCertPool := x509.NewCertPool()
-	if ok := caCertPool.AppendCertsFromPEM(caCertPem); !ok {
-		return errors.New("Failed to append CA cert to the pool")
+	var caCertPool *x509.CertPool
+	if caCertFile != "" {
+		caCertPem, err := ioutil.ReadFile(caCertFile)
+		if err != nil {
+			return fmt.Errorf("Unable to read CA cert: %s", err)
+		}
+		caCertPool = x509.NewCertPool()
+		if ok := caCertPool.AppendCertsFromPEM(caCertPem); !ok {
+			return errors.New("Failed to append CA cert to the pool")
+		}
 	}
 
 	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{cert},
-		RootCAs:      caCertPool,
-		// ServerName:   "localhost",
-		InsecureSkipVerify: true,
+		Certificates:       []tls.Certificate{cert},
+		RootCAs:            caCertPool,
+		ServerName:         hostname,
+		InsecureSkipVerify: insecure,
 	}
 	tlsConfig.BuildNameToCertificate()
 
