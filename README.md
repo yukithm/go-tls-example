@@ -18,7 +18,7 @@ Create server key and certificate:
 
 ```sh
 openssl genrsa -out server.key 4096
-openssl req -new -key server.key -out client.csr
+openssl req -new -key server.key -out server.csr
 openssl ca -policy policy_anything -out server.crt -days 3650 -infiles server.csr
 ```
 
